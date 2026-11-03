@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1F3A5F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="暗記カード">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png">
+<title>暗記カード</title>
+<style>
+:root{--navy:#1F3A5F;--blue:#4C78A8;--red:#C0392B;--green:#3B7A35;--gold:#B8900A;--orange:#E8913A;--gray:#C9CED6;--bg:#F4F6F9;--card:#fff;--text:#1d2430;--sub:#5d6675;--line:#dfe3ea}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif;font-size:16px}
+body{padding:env(safe-area-inset-top) 0 calc(72px + env(safe-area-inset-bottom))}
+header{position:sticky;top:0;z-index:5;background:var(--navy);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
+header h1{font-size:18px;margin:0;font-weight:600;flex:1}
+.lv{font-size:13px;background:rgba(255,255,255,.18);padding:4px 10px;border-radius:999px}
+main{max-width:560px;margin:0 auto;padding:14px}
+.card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card h2{font-size:16px;margin:0 0 10px;color:var(--navy);display:flex;align-items:center;gap:6px}
+.muted{color:var(--sub);font-size:13px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:0;border-radius:12px;padding:13px 16px;font-size:16px;font-weight:600;background:var(--navy);color:#fff;width:100%;cursor:pointer}
+.btn.sub{background:#E8EDF4;color:var(--navy)}
+.btn.red{background:var(--red)}.btn.green{background:var(--green)}
+.pill{display:inline-block;padding:3px 10px;border-radius:999px;color:#fff;font-size:13px;font-weight:600}
+select,input[type=number],input[type=text],textarea{font-size:16px;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--text)}
+textarea{width:100%;min-height:120px;font-family:inherit}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stats b{display:block;font-size:24px;color:var(--navy)}
+.stats span{font-size:12px;color:var(--sub)}
+.bar{height:10px;background:#E8EDF4;border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--gold);border-radius:999px;transition:width .6s}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;border:0;background:none;padding:10px 0 8px;font-size:12px;color:var(--sub);display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8}
+nav button.on{color:var(--navy);font-weight:700}
+.q{min-height:220px;display:flex;flex-direction:column;justify-content:center;text-align:center}
+.q .no{font-size:13px;color:var(--sub)}
+.q .prompt{font-size:26px;font-weight:700;margin:14px 0;line-height:1.4}
+.q .ans{font-size:24px;font-weight:700;color:var(--red);margin:6px 0}
+.q .ex{font-size:15px;color:var(--sub);text-align:left;margin-top:10px;line-height:1.6;border-top:1px dashed var(--line);padding-top:10px}
+.prog{display:flex;justify-content:space-between;font-size:13px;color:var(--sub);margin-bottom:6px}
+.combo{font-size:15px;font-weight:700;color:var(--gold);text-align:center;min-height:22px}
+.grade{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.toast{position:fixed;left:50%;top:30%;transform:translate(-50%,-50%) scale(.9);background:var(--navy);color:#fff;padding:18px 26px;border-radius:16px;font-size:20px;font-weight:700;opacity:0;pointer-events:none;transition:.25s;z-index:20;text-align:center;min-width:220px}
+.toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.pop{position:fixed;left:50%;top:44%;transform:translateX(-50%);font-weight:800;font-size:22px;color:var(--green);pointer-events:none;z-index:19;animation:up .9s ease-out forwards}
+@keyframes up{from{opacity:1;transform:translate(-50%,0)}to{opacity:0;transform:translate(-50%,-60px)}}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:7px 4px;text-align:left;vertical-align:top}
+th{color:var(--sub);font-weight:600;font-size:12px}
+.deck{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.deck:last-child{border-bottom:0}
+.deck .name{flex:1;font-weight:600}
+.small{font-size:13px;padding:7px 10px;width:auto;border-radius:9px}
+.hidden{display:none!important}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:30;padding:24px}
+.modal>div{background:#fff;border-radius:16px;padding:20px;max-width:380px;width:100%;max-height:85vh;overflow:auto}
+.modal p{margin:0 0 16px;line-height:1.6}
+/* レベルのはしご */
+.ladder{display:grid;grid-template-columns:repeat(10,1fr);gap:3px;margin:10px 0 4px}
+.ladder div{height:26px;border-radius:5px;background:#E8EDF4;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#8a93a3}
+.ladder div.done{background:var(--gold);color:#fff}
+.ladder div.now{background:var(--navy);color:#fff;outline:2px solid var(--gold);outline-offset:1px}
+/* 問題のマス目 */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(22px,1fr));gap:3px;margin:8px 0}
+.grid i{aspect-ratio:1;border-radius:4px;background:var(--gray)}
+.grid i.s1{background:var(--orange)}.grid i.s2{background:#9CC56B}.grid i.s3{background:var(--green)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--sub)}
+.legend span::before{content:"";display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px;background:var(--c)}
+.stack{display:flex;height:14px;border-radius:999px;overflow:hidden;background:var(--gray)}
+.stack i{display:block;height:100%}
+/* 週・月のカレンダー */
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-size:11px;color:var(--sub)}
+.week .d{width:34px;height:34px;margin:3px auto 0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;border:2px solid #E1E5EC;color:#9aa2b0}
+.week .d.part{border-color:var(--orange);color:var(--orange)}
+.week .d.goal{background:var(--gold);border-color:var(--gold);color:#fff}
+.week .d.today{box-shadow:0 0 0 2px var(--navy)}
+.month{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.month div{aspect-ratio:1;border-radius:6px;background:#EEF1F5;font-size:11px;display:flex;align-items:center;justify-content:center;color:#8a93a3}
+.month div.p1{background:#F6D9B8;color:#8a5a20}.month div.p2{background:#EBC06A;color:#5c3d00}.month div.goal{background:var(--gold);color:#fff;font-weight:700}
+.month div.x{background:none}
+.big{font-size:30px;font-weight:800;color:var(--navy);line-height:1}
+.chip{display:inline-block;background:#FFF3D6;color:#7a5a00;border-radius:8px;padding:4px 8px;font-size:12px;font-weight:600;margin:2px 4px 2px 0}
+.rule td:first-child{width:72%}
+.rule td:last-child{text-align:right;font-weight:700;color:var(--gold);white-space:nowrap}
+.link{background:none;border:0;color:var(--blue);font-size:13px;padding:0;text-decoration:underline;cursor:pointer}
+#printArea{display:none}
+@media print{
+  body{background:#fff;padding:0}
+  header,nav,main{display:none!important}
+  #printArea{display:block!important;padding:10mm;font-size:12pt}
+  #printArea table{font-size:12pt}
+  #printArea td{height:11mm}
+  .pb{page-break-before:always}
+}
+</style>
+</head>
+<body>
+<header><h1>暗記カード</h1><span class="lv" id="hdrLv">Lv.1</span></header>
+<main id="view"></main>
+<div id="printArea"></div>
+<div class="toast" id="toast"></div>
+<nav>
+  <button data-v="home" class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>ホーム</button>
+  <button data-v="study"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M8 10h8M8 14h5"/></svg>学習</button>
+  <button data-v="log"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>記録</button>
+  <button data-v="data"><svg viewBox="0 0 24 24"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3zM4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>問題データ</button>
+</nav>
+<script>
+"use strict";
+const APPVER="Ver.7（2026-11-03）";
+/* ===== ルール（ここを変えるとポイントやレベルが変わる） ===== */
+const INTERVALS=[0,1,3,7,14,30];            // 覚えてた回数ごとの、次に出るまでの日数
+const MASTER=3;                              // 日をあけて3回続けて「覚えてた」→「覚えた」
+const PT={ok:10,ng:2,again:3,combo:5,comboEvery:5,mastered:20,goal:30,streakPer:5,streakMax:50};
+const MILESTONES={3:50,7:100,14:200,21:300,30:500};
+const LEVELS=[ // [必要な累計ポイント, 名前]
+ [0,"スタート"],[300,"ウォームアップ"],[800,"基礎"],[1500,"定着中"],[2500,"中級"],
+ [3700,"実戦"],[5100,"上級"],[6700,"仕上げ"],[8500,"熟練"],[10500,"マスター"]];
+const COLORS=["#B8403F","#4C78A8","#3B7A35","#F28E2B","#8A5A86","#17BECF","#D2691E","#2E5A88"];
+const K={decks:"ak_decks",prog:"ak_prog",log:"ak_log",stats:"ak_stats",set:"ak_settings"};
+const SAMPLE={id:"sample",name:"サンプル（動作確認用）",color:"#7F7F7F",cards:[
+ ["1","look forward to ~","～を楽しみに待つ","I'm looking forward to the trip.","旅行を楽しみにしている。"],
+ ["2","take care of ~","～の世話をする","She takes care of her little brother.","彼女は弟の世話をしている。"],
+ ["3","put off ~","～を延期する","We put off the game because of the rain.","雨で試合を延期した。"],
+ ["4","give up ~","～をあきらめる・やめる","Don't give up your dream.","夢をあきらめるな。"],
+ ["5","come up with ~","～を思いつく","He came up with a good idea.","彼はよい考えを思いついた。"],
+ ["6","run out of ~","～を使い果たす","We ran out of milk.","牛乳を切らした。"],
+ ["7","get along with ~","～と仲良くやる","I get along with my classmates.","クラスメートと仲良くやっている。"],
+ ["8","look up to ~","～を尊敬する","Many players look up to him.","多くの選手が彼を尊敬している。"],
+ ["9","make up for ~","～の埋め合わせをする","I studied hard to make up for lost time.","失った時間を取り戻すため懸命に勉強した。"],
+ ["10","carry out ~","～を実行する","They carried out the plan.","彼らはその計画を実行した。"],
+ ["11","depend on ~","～に頼る・～次第である","It depends on the weather.","それは天気次第だ。"],
+ ["12","be about to do","まさに～しようとしている","The train is about to leave.","電車はまさに出発しようとしている。"]
+].map(([no,en,ja,ex,exja])=>({no,en,ja,ex,exja}))};
+
+/* ===== 保存 ===== */
+const load=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){toast("保存できませんでした",1800)}};
+let decks=load(K.decks,null); if(!decks){decks=[SAMPLE];save(K.decks,decks)}
+let prog=load(K.prog,{}), log=load(K.log,{}), stats=load(K.stats,{});
+stats=Object.assign({xp:0,best:0,milestones:[]},stats);
+let set=Object.assign({newPerDay:15,deck:"sample",shameShown:""},load(K.set,{}));
+if(!decks.find(d=>d.id===set.deck)) set.deck=decks[0]?decks[0].id:"";
+const saveAll=()=>{save(K.prog,prog);save(K.log,log);save(K.stats,stats);save(K.set,set)};
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+
+/* ===== 便利関数 ===== */
+const $=id=>document.getElementById(id);
+const fmt=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const today=()=>fmt(new Date());
+const addDays=(s,n)=>{const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);return fmt(d)};
+const md=s=>+s.slice(5,7)+"/"+(+s.slice(8));
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cid=(d,c)=>d.id+"::"+c.no;
+const deckById=id=>decks.find(d=>d.id===id);
+const DAYDEF={ok:0,ng:0,ans:0,pts:0,ng_ids:[],newc:0,sec:0,goal:false,mast:null};
+const dayLog=t=>{const l=log[t]||(log[t]={});for(const k in DAYDEF)if(!(k in l))l[k]=Array.isArray(DAYDEF[k])?[]:DAYDEF[k];return l};
+const todayLog=()=>dayLog(today());
+function lvInfo(xp){let i=0;while(i+1<LEVELS.length&&xp>=LEVELS[i+1][0])i++;
+  const max=i===LEVELS.length-1;return{lv:i+1,name:LEVELS[i][1],max,from:LEVELS[i][0],to:max?LEVELS[i][0]:LEVELS[i+1][0],next:max?null:LEVELS[i+1][1]}}
+// 目標を達成した日が何日続いているか
+function streak(){let n=0,d=today();if(!(log[d]&&log[d].goal))d=addDays(d,-1);while(log[d]&&log[d].goal){n++;d=addDays(d,-1)}return n}
+function stage(p){if(!p)return 0;if(p.box>=MASTER)return 3;if(p.box>=1)return 2;return 1}   // 0まだ 1忘れた 2練習中 3覚えた
+function deckStages(d){const a=[0,0,0,0],t=today();let due=0,nw=0;for(const c of d.cards){const p=prog[cid(d,c)];a[stage(p)]++;if(!p)nw++;else if(p.due<=t)due++}return{a,due,nw,all:d.cards.length}}
+function masteredAll(){let n=0;for(const d of decks)for(const c of d.cards){const p=prog[cid(d,c)];if(p&&p.box>=MASTER)n++}return n}
+function toast(msg,ms=1400){const t=$("toast");t.innerHTML=msg;t.classList.add("show");clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove("show"),ms)}
+const queueT=[];function toastQ(msg,ms=1500){queueT.push([msg,ms]);if(queueT.length===1)runQ()}
+function runQ(){if(!queueT.length)return;const[m,ms]=queueT[0];toast(m,ms);setTimeout(()=>{queueT.shift();runQ()},ms+250)}
+function pop(txt,color){const e=document.createElement("div");e.className="pop";e.textContent=txt;if(color)e.style.color=color;document.body.appendChild(e);setTimeout(()=>e.remove(),950)}
+function ask(msg,okLabel="はい",cancel=true){return new Promise(res=>{const m=document.createElement("div");m.className="modal";
+  m.innerHTML=`<div><div style="margin-bottom:16px;line-height:1.6">${msg}</div><div class="${cancel?"grade":""}">${cancel?'<button class="btn sub">やめる</button>':""}<button class="btn">${okLabel}</button></div></div>`;
+  document.body.appendChild(m);const bs=m.querySelectorAll("button");bs.forEach((b,i)=>b.onclick=()=>{m.remove();res(cancel?i===1:true)})})}
+function addXP(n){const before=lvInfo(stats.xp).lv;stats.xp+=n;todayLog().pts+=n;const a=lvInfo(stats.xp);
+  if(a.lv>before){if(a.max)toastQ(`Lv.10「マスター」達成！<br><span style="font-size:16px">父親から金一封が進呈されます</span>`,3500);else toastQ(`レベルアップ！<br>Lv.${a.lv}「${a.name}」`,2000)}hdr()}
+function hdr(){const L=lvInfo(stats.xp);$("hdrLv").textContent=`Lv.${L.lv} / 10`}
+
+/* ===== 図のパーツ ===== */
+function ring(val,max,size=96,color="#B8900A"){const r=size/2-8,c=2*Math.PI*r,f=Math.min(1,val/max);
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#E8EDF4" stroke-width="10"/>
+  <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="10" stroke-linecap="round" stroke-dasharray="${c*f} ${c}" transform="rotate(-90 ${size/2} ${size/2})" style="transition:stroke-dasharray .6s"/>
+  <text x="50%" y="47%" text-anchor="middle" font-size="22" font-weight="800" fill="#1F3A5F">${val}</text><text x="50%" y="66%" text-anchor="middle" font-size="11" fill="#5d6675">/ ${max}問</text></svg>`}
+function ladder(xp){const L=lvInfo(xp);return `<div class="ladder">${LEVELS.map((_,i)=>`<div class="${i+1<L.lv?"done":i+1===L.lv?"now":""}" ${i===9?'style="border:2px solid var(--gold)"':""}>${i+1}</div>`).join("")}</div>`}
+function levelCard(){const L=lvInfo(stats.xp),f=L.max?1:(stats.xp-L.from)/(L.to-L.from);
+  return `<div class="card"><div class="row" style="justify-content:space-between;align-items:flex-end">
+   <div><div class="muted">レベル（全10段階）</div><div><span class="big">Lv.${L.lv}</span> <b style="color:var(--navy)">「${L.name}」</b></div></div>
+   <div style="text-align:right"><div class="muted">累計</div><b style="font-size:20px;color:var(--gold)">${stats.xp} pt</b></div></div>
+   ${ladder(stats.xp)}
+   <div style="margin:8px 0 2px;padding:8px 10px;border-radius:10px;background:#FFF3D6;color:#7a5a00;font-size:14px;font-weight:700">${L.max?"Lv.10「マスター」達成！ 父親から金一封が進呈されます":`Lv.10「マスター」になると、父親から<b>金一封</b>が進呈されます（あと ${LEVELS[9][0]-stats.xp} pt）`}</div>
+   <div class="bar" style="margin-top:8px"><i style="width:${Math.round(f*100)}%"></i></div>
+   <div class="row" style="justify-content:space-between;margin-top:6px"><span class="muted">${L.max?"最高レベルに到達しました":`あと <b style="color:var(--navy)">${L.to-stats.xp} pt</b> で Lv.${L.lv+1}「${L.next}」`}</span><button class="link" id="ruleBtn">ポイントのルール</button></div></div>`}
+function showRules(){ask(`<b style="font-size:17px;color:var(--navy)">ポイントのルール</b>
+ <table class="rule" style="margin-top:8px">
+ <tr><td>「覚えてた」1問</td><td>+${PT.ok}</td></tr><tr><td>「忘れた」1問（やった分）</td><td>+${PT.ng}</td></tr>
+ <tr><td>忘れた問題を、もう一度で正解</td><td>+${PT.again}</td></tr><tr><td>${PT.comboEvery}問連続で「覚えてた」ごと</td><td>+${PT.combo}</td></tr>
+ <tr><td>1問が「覚えた」になった</td><td>+${PT.mastered}</td></tr><tr><td>今日の30問（日→英15・英→日15）を達成</td><td>+${PT.goal}</td></tr>
+ <tr><td>連続日数ボーナス（目標達成時）<br><span class="muted">連続日数×${PT.streakPer}</span></td><td>最大+${PT.streakMax}</td></tr>
+ </table><b style="display:block;margin:12px 0 4px;color:var(--navy)">連続日数の節目ボーナス</b><table class="rule">${Object.entries(MILESTONES).map(([d,v])=>`<tr><td>${d}日連続</td><td>+${v}</td></tr>`).join("")}</table>
+ <b style="display:block;margin:14px 0 4px;color:var(--navy)">レベル</b>
+ <table class="rule">${LEVELS.map((l,i)=>`<tr><td>Lv.${i+1}「${l[1]}」${i===9?"<br><b style='color:#7a5a00'>父親から金一封が進呈されます</b>":""}</td><td>${l[0]} pt〜</td></tr>`).join("")}</table>
+ <p class="muted" style="margin-top:10px">毎日の30問を続けて、102問を「覚えた」にしていくと、約4〜5週間でLv.10に届く計算です。</p>
+ <b style="display:block;margin:10px 0 4px;color:var(--navy)">「覚えた」とは</b>
+ <p class="muted" style="margin:0">日をあけて<b>3回続けて</b>「覚えてた」になった問題。1回目の次は1日後、2回目の次は3日後に出ます。途中で「忘れた」を押すと最初からやり直しです。</p>`,"閉じる",false)}
+function gridCard(d,title){const s=deckStages(d);const n=s.all||1;
+  const cells=d.cards.map(c=>`<i class="s${stage(prog[cid(d,c)])}" title="No.${esc(c.no)}"></i>`).join("");
+  return `<div class="card"><h2>${title}</h2>
+   <div class="row" style="justify-content:space-between"><span><span class="big" style="color:var(--green)">${s.a[3]}</span><b> / ${s.all}問</b> <span class="muted">覚えた</span></span><span class="muted">${Math.round(s.a[3]/n*100)}%</span></div>
+   <div class="stack" style="margin-top:8px"><i style="width:${s.a[3]/n*100}%;background:var(--green)"></i><i style="width:${s.a[2]/n*100}%;background:#9CC56B"></i><i style="width:${s.a[1]/n*100}%;background:var(--orange)"></i></div>
+   <div class="grid">${cells}</div>
+   <div class="legend"><span style="--c:var(--green)">覚えた ${s.a[3]}</span><span style="--c:#9CC56B">練習中 ${s.a[2]}</span><span style="--c:var(--orange)">忘れた ${s.a[1]}</span><span style="--c:var(--gray)">まだ ${s.a[0]}</span></div>
+   <p class="muted" style="margin:8px 0 0">1マス＝1問。全部を緑にするのが目標です。</p></div>`}
+function weekRow(){const t=today(),d0=new Date(t+"T00:00:00"),mon=addDays(t,-((d0.getDay()+6)%7));
+  return `<div class="week">${"月火水木金土日".split("").map((w,i)=>{const d=addDays(mon,i),l=log[d],cls=l&&l.goal?"goal":l&&l.ans>0?"part":"";
+   return `<div>${w}<div class="d ${cls} ${d===t?"today":""}">${+d.slice(8)}</div></div>`}).join("")}</div>`}
+
+/* ===== 画面切り替え ===== */
+const V=$("view");let cur="home",session=null;
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.v));
+function navOn(v){document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v===v))}
+async function go(v){if(cur==="study"&&session&&!session.done&&v!=="study"){if(!(await ask("学習を中断しますか？（答えた分は記録されています）")))return;finish(true)}
+  cur=v;navOn(v);if(v!=="study")session=null;({home,study:studyStart,log:logView,data:dataView})[v]();scrollTo(0,0);hdr()}
+
+/* ===== 連続が途切れたときのメッセージ ===== */
+const SHAME_TITLE="明治世田谷高校に入学して、1学期の振り返り（2026/07/18）";
+const SHAME_DEFAULT="明治世田谷高校に入学してみて最初の一学期は気を抜いてしまい中学の頃と比べてひどい順位を取ってしまいました。一年の最初の学期にこのような結果になってしまい反省しました。";
+let DEMO=false; // 確認用の表示（記録は変えない）
+const CLEAR_DAYS=2; // 途切れたあと、何日続けて30問を達成すれば赤い枠が消えるか
+function updatePenalty(){ // 連続が途切れたかを調べて、赤い枠の状態を更新する
+  const t=today(),y=addDays(t,-1);
+  if(stats.lastGoal&&stats.lastGoal<y&&!(log[t]&&log[t].goal)){
+    if(!stats.penalty||stats.penalty.broke!==stats.lastGoal){stats.penalty={len:stats.lastStreak||1,broke:stats.lastGoal};save(K.stats,stats)}}
+}
+function brokenInfo(){
+  if(DEMO)return{len:5,demo:true,prog:0};
+  updatePenalty();
+  if(!stats.penalty)return null;
+  return{len:stats.penalty.len,prog:Math.min(streak(),CLEAR_DAYS-1),fresh:!(log[addDays(today(),-1)]&&log[addDays(today(),-1)].goal)&&!(log[today()]&&log[today()].goal)};
+}
+function shameCard(b){const dots=Array.from({length:CLEAR_DAYS},(_,i)=>`<span style="display:inline-block;width:26px;height:26px;border-radius:50%;margin-right:6px;vertical-align:middle;${i<b.prog?"background:var(--gold)":"border:2px solid var(--red);background:#fff"}"></span>`).join("");
+  return `<div class="card" style="background:#FDECEA;border:2px solid var(--red)">
+  <div style="color:var(--red);font-weight:800;font-size:17px;margin-bottom:6px">${b.len}日連続が途切れました</div>
+  <div class="muted" style="margin-bottom:4px">${SHAME_TITLE}</div><div style="white-space:pre-wrap;line-height:1.7;font-size:16px;background:#fff;border-radius:10px;padding:10px 12px">${esc(SHAME_DEFAULT)}</div>
+  <div style="margin-top:10px;display:flex;align-items:center;flex-wrap:wrap;gap:4px"><span>${dots}</span><b style="color:var(--red);font-size:14px">30問を${CLEAR_DAYS}日続けて達成すると消えます（あと${CLEAR_DAYS-b.prog}日）</b></div>
+  ${b.demo?`<div style="margin-top:10px;padding:8px 10px;border-radius:8px;background:#fff;font-size:13px;color:var(--sub)">これは確認用の表示です（記録は変わっていません）</div><button class="btn sub" id="demoEnd" style="margin-top:8px">確認を終わる</button>`:""}</div>`}
+function shameModalOnce(){const b=brokenInfo(),t=today();if(!b||(!b.demo&&(!b.fresh||set.shameShown===t)))return;if(b.demo){if(DEMO==="shown")return;DEMO="shown"}else{set.shameShown=t;save(K.set,set)}
+  ask(`<div style="color:var(--red);font-weight:800;font-size:18px;margin-bottom:8px">${b.len}日連続が途切れました</div><div class="muted" style="margin-bottom:4px">${SHAME_TITLE}</div><div style="white-space:pre-wrap;line-height:1.7;background:#FDECEA;border-radius:10px;padding:10px 12px">${esc(SHAME_DEFAULT)}</div><div class="muted" style="margin-top:8px">30問を${CLEAR_DAYS}日続けて達成すると、ホームの赤い枠が消えます</div>`,"今日の30問を始める",false).then(()=>{if(!b.demo&&deckById(set.deck))startSession("today")})}
+
+/* ===== ホーム ===== */
+const DAILY0={ja2en:15,en2ja:15};const GOAL=30;
+const DAILY=new Proxy({},{get:(_,m)=>{const d=deckById(set.deck);return Math.min(DAILY0[m],d?d.cards.length:DAILY0[m])}});
+function home(){
+  const tl=log[today()]?todayLog():{ans:0,pts:0,goal:false,ng_ids:[],a_ja:0,a_en:0};
+  const st=streak(),nextM=Object.keys(MILESTONES).map(Number).find(m=>m>st);
+  const d=deckById(set.deck),b=brokenInfo();
+  const opts=decks.map(x=>`<option value="${x.id}" ${x.id===set.deck?"selected":""}>${esc(x.name)}</option>`).join("");
+  const aj=Math.min(tl.a_ja||0,DAILY.ja2en),ae=Math.min(tl.a_en||0,DAILY.en2ja);
+  V.innerHTML=`${b?shameCard(b):""}
+  <div class="card"><h2>今日の30問（約5分）</h2>
+   <div class="row" style="flex-wrap:nowrap;gap:14px">${ring(aj+ae,DAILY.ja2en+DAILY.en2ja)}
+    <div style="flex:1">
+     <div class="row" style="justify-content:space-between"><span class="muted">日本語→英語</span><b>${aj}/${DAILY.ja2en}</b></div><div class="bar" style="margin:3px 0 8px"><i style="width:${aj/DAILY.ja2en*100}%;background:var(--navy)"></i></div>
+     <div class="row" style="justify-content:space-between"><span class="muted">英語→日本語</span><b>${ae}/${DAILY.en2ja}</b></div><div class="bar" style="margin:3px 0 8px"><i style="width:${ae/DAILY.en2ja*100}%;background:var(--blue)"></i></div>
+     ${tl.goal?`<b style="color:var(--gold)">今日の目標達成！</b>`:`<span class="muted">達成で +${PT.goal} pt と連続ボーナス</span>`}</div></div>
+   ${d?`<button class="btn" id="goToday" style="margin-top:12px">${tl.goal?"もう1回練習する":(aj+ae>0?"続きから始める":"今日の30問を始める")}</button>`:`<p class="muted">問題データがありません。「問題データ」から取り込んでください。</p>`}
+   <div class="row" style="margin-top:12px;align-items:flex-end"><span class="big" style="font-size:26px;color:var(--gold)">${st}</span><b>日連続</b>
+     <span class="muted" style="margin-left:auto">${nextM?`あと${nextM-st}日で ${nextM}日ボーナス +${MILESTONES[nextM]}`:"すべての節目を達成"}</span></div>
+   <div style="margin-top:8px">${weekRow()}</div>
+   <div class="legend" style="margin-top:8px"><span style="--c:var(--gold)">目標達成</span><span style="--c:var(--orange)">途中まで</span></div></div>
+  ${levelCard()}
+  ${d?gridCard(d,"覚えた問題（"+esc(d.name)+"）"):""}
+  ${d?`<div class="card"><h2>そのほか</h2>${decks.length>1?`<select id="deckSel" style="width:100%;margin-bottom:10px">${opts}</select>`:""}
+   <button class="btn sub" id="goWrong">今日忘れた問題をもう一度（${tl.ng_ids.length}問）</button></div>`:""}`;
+  $("ruleBtn").onclick=showRules;
+  if($("demoEnd"))$("demoEnd").onclick=()=>{DEMO=false;home();scrollTo(0,0)};
+  if(!d)return;
+  if($("deckSel"))$("deckSel").onchange=()=>{set.deck=$("deckSel").value;save(K.set,set);home()};
+  $("goToday").onclick=()=>startSession(tl.goal?"extra":"today");
+  $("goWrong").onclick=()=>startSession("wrong");
+  if(cur==="home")shameModalOnce();
+}
+
+/* ===== 学習 ===== */
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const keyOf=(d,c,mode)=>cid(d,c)+(mode==="en2ja"?"|r":"");
+function pick(d,mode,n,t,newLeft){ // 復習の時期の問題 → 新しい問題 → まだ覚えていない問題 の順で n問
+  const P=c=>prog[keyOf(d,c,mode)];
+  const due=d.cards.filter(c=>P(c)&&P(c).due<=t).sort((x,y)=>P(x).due<P(y).due?-1:1);
+  let out=due.slice(0,n);
+  if(mode==="ja2en"){out=out.concat(d.cards.filter(c=>!P(c)).slice(0,Math.max(0,Math.min(n-out.length,newLeft))))}
+  else{ // 英→日は、日→英で一度出た問題から
+    const seen=d.cards.filter(c=>!P(c)&&prog[cid(d,c)]);out=out.concat(seen.slice(0,n-out.length))}
+  if(out.length<n){const s=new Set(out);out=out.concat(shuffle(d.cards.filter(c=>!s.has(c)&&(mode==="ja2en"?P(c)&&P(c).box<MASTER:prog[cid(d,c)]))).slice(0,n-out.length))}
+  return out.slice(0,n);
+}
+function startSession(kind){
+  const d=deckById(set.deck);if(!d)return toast("問題データがありません");
+  const t=today(),tl=todayLog();const phases=[];
+  if(kind==="wrong"){const ids=new Set(tl.ng_ids);const q=d.cards.filter(c=>ids.has(cid(d,c)));if(!q.length)return toast("今日忘れた問題はありません");phases.push({mode:"ja2en",queue:shuffle(q),count:false})}
+  else{
+    const extra=kind==="extra",rj=extra?DAILY.ja2en:DAILY.ja2en-(tl.a_ja||0),re=extra?DAILY.en2ja:DAILY.en2ja-(tl.a_en||0);
+    if(rj>0)phases.push({mode:"ja2en",n:rj,count:!extra});
+    if(re>0)phases.push({mode:"en2ja",n:re,count:!extra});
+  }
+  session={deck:d,phases,pi:-1,queue:[],done:false,ok:0,ng:0,combo:0,again:new Set(),start:Date.now(),xp0:stats.xp,
+    pts:{ok:0,ng:0,again:0,combo:0,mastered:0,goal:0,streak:0,mile:0},newMast:0,answered:0,total:0};
+  nextPhase(true);
+}
+function nextPhase(first){
+  const s=session;s.pi++;const ph=s.phases[s.pi];if(!ph)return finish();
+  const tl=todayLog();
+  if(!ph.queue)ph.queue=shuffle(pick(s.deck,ph.mode,ph.n,today(),Math.max(0,set.newPerDay-tl.newc)));
+  if(!ph.queue.length)return nextPhase(first);
+  s.queue=ph.queue.slice();s.mode=ph.mode;s.count=ph.count;s.total=ph.queue.length;s.again=new Set();
+  cur="study";navOn("study");
+  if(!first){V.innerHTML=`<div class="card" style="text-align:center;padding:30px 16px"><div class="muted">後半</div><div class="big" style="margin:10px 0">英語 → 日本語</div><div class="muted">あと${s.total}問</div></div>`;setTimeout(showQ,900)}
+  else showQ();
+}
+function studyStart(){if(session&&!session.done)return showQ();cur="home";navOn("home");home()}
+function mmss(ms){const t=Math.floor(ms/1000);return Math.floor(t/60)+":"+String(t%60).padStart(2,"0")}
+let timerH=null;
+function showQ(){
+  const s=session;clearInterval(timerH);if(!s.queue.length)return nextPhase(false);
+  const c=s.queue[0],d=s.deck,ja=s.mode==="ja2en";
+  const doneN=s.total-s.queue.filter(x=>!s.again.has(keyOf(d,x,s.mode))).length;
+  V.innerHTML=`<div class="prog"><span class="pill" style="background:${ja?"var(--navy)":"var(--blue)"}">${ja?"日本語 → 英語":"英語 → 日本語"}</span><span><b id="tm">${mmss(Date.now()-s.start)}</b> / 目安 5:00　<b style="color:var(--gold)">+${stats.xp-s.xp0} pt</b></span></div>
+  <div class="bar" style="margin-bottom:10px"><i style="width:${Math.round(doneN/s.total*100)}%;background:${ja?"var(--navy)":"var(--blue)"}"></i></div>
+  <div class="card q"><div class="no">${doneN+1>s.total?s.total:doneN+1} / ${s.total}問　No.${esc(c.no)}${s.again.has(keyOf(d,c,s.mode))?"（もう一度）":""}</div>
+   <div class="prompt">${esc(ja?c.ja:c.en)}</div>
+   <div id="ansArea" class="hidden"><div class="ans">${esc(ja?c.en:c.ja)}</div>${c.ex?`<div class="ex">${esc(c.ex)}${c.exja?"<br>"+esc(c.exja):""}</div>`:""}</div></div>
+  <div class="combo">${s.combo>=2?`${s.combo}問連続！　あと${PT.comboEvery-s.combo%PT.comboEvery}問で +${PT.combo} pt`:""}</div>
+  <div id="btnShow"><button class="btn" id="show">答えを見る</button></div>
+  <div id="btnGrade" class="grade hidden"><button class="btn red" id="ng">忘れた</button><button class="btn green" id="ok">覚えてた</button></div>
+  <button class="btn sub small" id="quit" style="margin-top:14px;width:100%">ここで中断する</button>`;
+  timerH=setInterval(()=>{const e=$("tm");if(e)e.textContent=mmss(Date.now()-s.start);else clearInterval(timerH)},1000);
+  $("show").onclick=()=>{$("ansArea").classList.remove("hidden");$("btnShow").classList.add("hidden");$("btnGrade").classList.remove("hidden")};
+  $("ok").onclick=()=>grade(true);$("ng").onclick=()=>grade(false);$("quit").onclick=()=>finish(true);
+}
+function grade(ok){
+  const s=session,c=s.queue.shift(),d=s.deck,id=cid(d,c),k=keyOf(d,c,s.mode),t=today(),tl=todayLog();
+  const p=prog[k]||{box:0,due:t,ok:0,ng:0};const isNew=!prog[k],isAgain=s.again.has(k),main=s.mode==="ja2en";
+  if(isNew&&main)tl.newc++;
+  if(!isAgain){tl.ans++;if(s.count){if(main)tl.a_ja=(tl.a_ja||0)+1;else tl.a_en=(tl.a_en||0)+1}}
+  if(ok){
+    s.combo++;if(s.combo>stats.best)stats.best=s.combo;
+    if(!isAgain){const wasM=p.box>=MASTER;p.box=Math.min(5,p.box+1);p.ok++;tl.ok++;s.ok++;addXP(PT.ok);s.pts.ok+=PT.ok;pop("+"+PT.ok);
+      if(main&&!wasM&&p.box>=MASTER){addXP(PT.mastered);s.pts.mastered+=PT.mastered;s.newMast++;toastQ(`No.${esc(c.no)} を覚えた！<br>+${PT.mastered} pt`,1300)}}
+    else{addXP(PT.again);s.pts.again+=PT.again;pop("+"+PT.again)}
+    p.due=addDays(t,INTERVALS[Math.min(p.box,INTERVALS.length-1)]);
+    if(s.combo%PT.comboEvery===0){addXP(PT.combo);s.pts.combo+=PT.combo;toastQ(`${s.combo}問連続！ +${PT.combo} pt`,1100)}
+  }else{
+    if(!isAgain){p.ng++;tl.ng++;s.ng++;if(!tl.ng_ids.includes(id))tl.ng_ids.push(id);addXP(PT.ng);s.pts.ng+=PT.ng;pop("+"+PT.ng,"#C0392B")}
+    p.box=0;p.due=t;s.combo=0;
+    s.again.add(k);s.queue.splice(Math.min(s.queue.length,4),0,c);   // 4問後にもう一度
+  }
+  p.last=t;prog[k]=p;
+  if(!tl.goal&&(tl.a_ja||0)>=DAILY.ja2en&&(tl.a_en||0)>=DAILY.en2ja)goalReached(s,tl);
+  saveAll();showQ();
+}
+function goalReached(s,tl){
+  tl.goal=true;addXP(PT.goal);s.pts.goal+=PT.goal;
+  const st=streak(),b=Math.min(PT.streakMax,st*PT.streakPer);addXP(b);s.pts.streak+=b;
+  stats.lastGoal=today();stats.lastStreak=st;
+  if(stats.penalty){if(st>=CLEAR_DAYS){stats.penalty=null;toastQ(`${CLEAR_DAYS}日続けて達成！<br>赤い枠が消えました`,2400)}else toastQ(`あと${CLEAR_DAYS-st}日続けると<br>赤い枠が消えます`,2000)}
+  toastQ(`今日の30問 達成！<br>+${PT.goal} pt<br><span style="font-size:15px">${st}日連続ボーナス +${b} pt</span>`,2200);
+  const m=MILESTONES[st];if(m&&!stats.milestones.includes(st)){stats.milestones.push(st);addXP(m);s.pts.mile+=m;toastQ(`${st}日連続の節目！<br>+${m} pt`,2200)}
+}
+function finish(quit){
+  const s=session;if(!s||s.done)return;s.done=true;clearInterval(timerH);const tl=todayLog();
+  const ms=Date.now()-s.start;tl.sec+=Math.round(ms/1000);tl.mast=masteredAll();saveAll();
+  if(quit&&cur!=="study")return;
+  const got=stats.xp-s.xp0,L=lvInfo(stats.xp),P=s.pts;
+  const rows=[["覚えてた",P.ok],["忘れた（やった分）",P.ng],["もう一度で正解",P.again],["連続正解",P.combo],["「覚えた」になった",P.mastered],["今日の目標達成",P.goal],["連続日数ボーナス",P.streak],["節目ボーナス",P.mile]].filter(r=>r[1]>0);
+  V.innerHTML=`<div class="card" style="text-align:center"><h2 style="justify-content:center;font-size:20px">${tl.goal&&P.goal?"今日の30問 達成":"おつかれさま"}</h2>
+   <div class="big" style="color:var(--gold)">+${got} pt</div>
+   <div class="stats" style="margin:14px 0"><div><b style="color:var(--green)">${s.ok}</b><span>覚えてた</span></div><div><b style="color:var(--red)">${s.ng}</b><span>忘れた</span></div><div><b>${mmss(ms)}</b><span>かかった時間</span></div></div>
+   <table class="rule">${rows.map(r=>`<tr><td>${r[0]}</td><td>+${r[1]}</td></tr>`).join("")}</table></div>
+  <div class="card"><div class="row" style="justify-content:space-between"><b>Lv.${L.lv}「${L.name}」</b><span class="muted">${L.max?"最高レベル":`次まで ${L.to-stats.xp} pt`}</span></div>
+   ${ladder(stats.xp)}<div class="bar"><i id="fbar" style="width:0%"></i></div></div>
+  ${gridCard(s.deck,"覚えた問題")}
+  <button class="btn" id="toHome">ホームへ</button>
+  <button class="btn sub" id="toLog" style="margin-top:10px">今夜の書き取りリスト（${tl.ng_ids.length}問）</button>`;
+  setTimeout(()=>{const f=L.max?1:(stats.xp-L.from)/(L.to-L.from);const b=$("fbar");if(b)b.style.width=Math.round(f*100)+"%"},80);
+  $("toHome").onclick=()=>{session=null;go("home")};$("toLog").onclick=()=>{session=null;go("log")};
+}
+
+/* ===== 記録 ===== */
+function logView(){
+  const days=[];for(let i=13;i>=0;i--)days.push(addDays(today(),-i));
+  const mx=Math.max(50,...days.map(d=>log[d]?log[d].pts:0));
+  const W=340,H=170,bw=W/14,top=18,base=H-20;
+  const bars=days.map((d,i)=>{const l=log[d]||{pts:0,goal:false};const h=l.pts/mx*(base-top),x=i*bw+3;
+    return `<rect x="${x}" y="${base-h}" width="${bw-6}" height="${Math.max(h,0)}" rx="3" fill="${l.goal?"#B8900A":"#E8B96A"}"/>`+
+    (l.pts?`<text x="${x+(bw-6)/2}" y="${base-h-4}" font-size="9" text-anchor="middle" fill="#5d6675">${l.pts}</text>`:"")+
+    (i%2===1||i===13?`<text x="${x+(bw-6)/2}" y="${H-5}" font-size="9" text-anchor="middle" fill="#5d6675">${md(d)}</text>`:"")}).join("");
+  // 覚えた数の推移
+  let lastM=0;const ms=days.map(d=>{if(log[d]&&log[d].mast!=null)lastM=log[d].mast;return lastM});
+  const total=decks.reduce((a,d)=>a+d.cards.length,0)||1,mmx=Math.max(10,...ms);
+  const pts=ms.map((v,i)=>`${i*bw+bw/2},${base-v/mmx*(base-top)}`).join(" ");
+  const line=`<polyline points="${pts}" fill="none" stroke="#3B7A35" stroke-width="2.5"/>`+ms.map((v,i)=>`<circle cx="${i*bw+bw/2}" cy="${base-v/mmx*(base-top)}" r="3" fill="#3B7A35"/>`).join("")+
+    `<text x="${13*bw+bw/2}" y="${base-ms[13]/mmx*(base-top)-8}" font-size="11" font-weight="700" text-anchor="end" fill="#3B7A35">${ms[13]}問</text>`+
+    days.map((d,i)=>i%2===1||i===13?`<text x="${i*bw+bw/2}" y="${H-5}" font-size="9" text-anchor="middle" fill="#5d6675">${md(d)}</text>`:"").join("");
+  // 今月のカレンダー
+  const t=today(),first=t.slice(0,8)+"01",fd=new Date(first+"T00:00:00"),pad=(fd.getDay()+6)%7;
+  const dim=new Date(fd.getFullYear(),fd.getMonth()+1,0).getDate();
+  let cal="";for(let i=0;i<pad;i++)cal+='<div class="x"></div>';
+  for(let i=1;i<=dim;i++){const d=t.slice(0,8)+String(i).padStart(2,"0"),l=log[d];const c=l&&l.goal?"goal":l&&l.ans>=GOAL/2?"p2":l&&l.ans>0?"p1":"";cal+=`<div class="${c}" style="${d===t?"box-shadow:0 0 0 2px #1F3A5F":""}">${i}</div>`}
+  const tl=log[t]||{ng_ids:[]};const ids=[...new Set(tl.ng_ids)];
+  const rows=ids.map(id=>{const [dk,no]=id.split("::");const d=deckById(dk);const c=d&&d.cards.find(x=>x.no===no);return c?{d,c}:null}).filter(Boolean);
+  let tot=0,okT=0,days_=0;for(const l of Object.values(log)){tot+=l.ok+l.ng;okT+=l.ok;if(l.ans>0)days_++}
+  V.innerHTML=`<div class="card"><h2>毎日のポイント（2週間）</h2><svg viewBox="0 0 ${W} ${H}" width="100%">${bars}</svg>
+   <div class="legend"><span style="--c:#B8900A">目標を達成した日</span><span style="--c:#E8B96A">目標に届かなかった日</span></div></div>
+  <div class="card"><h2>「覚えた」問題の数（2週間）</h2><svg viewBox="0 0 ${W} ${H}" width="100%"><line x1="0" y1="${base}" x2="${W}" y2="${base}" stroke="#dfe3ea"/>${line}</svg>
+   <p class="muted" style="margin:4px 0 0">全${total}問のうち ${masteredAll()}問を覚えました</p></div>
+  <div class="card"><h2>${+t.slice(5,7)}月のカレンダー</h2><div class="month" style="font-size:11px;color:var(--sub);margin-bottom:4px">${"月火水木金土日".split("").map(w=>`<div class="x">${w}</div>`).join("")}</div><div class="month">${cal}</div>
+   <div class="legend" style="margin-top:8px"><span style="--c:var(--gold)">目標達成</span><span style="--c:#EBC06A">半分以上</span><span style="--c:#F6D9B8">少し</span></div>
+   <div class="stats" style="margin-top:12px"><div><b>${streak()}</b><span>連続達成日数</span></div><div><b>${days_}</b><span>学習した日</span></div><div><b>${tot?Math.round(okT/tot*100):0}%</b><span>覚えてた割合</span></div></div></div>
+  <div class="card"><h2>今夜の書き取りリスト（今日忘れた ${rows.length}問）</h2>
+   ${rows.length?`<table><tr><th>No.</th><th>日本語</th><th>英語</th></tr>${rows.map(r=>`<tr><td>${esc(r.c.no)}</td><td>${esc(r.c.ja)}</td><td>${esc(r.c.en)}</td></tr>`).join("")}</table>
+   <button class="btn" id="pr" style="margin-top:12px">印刷する（書き込み用＋答え）</button>`:`<p class="muted">今日忘れた問題はまだありません。</p>`}</div>`;
+  if(rows.length)$("pr").onclick=()=>printList(rows);
+}
+function printList(rows){
+  const t=today();
+  $("printArea").innerHTML=`<h3>書き取りリスト ${t}（${rows.length}問）　日本語を見て英語を書く</h3>
+  <table border="1" style="border-collapse:collapse;width:100%"><tr><th style="width:12%">No.</th><th style="width:40%">日本語</th><th>英語を書く</th></tr>
+  ${rows.map(r=>`<tr><td>${esc(r.c.no)}</td><td>${esc(r.c.ja)}</td><td></td></tr>`).join("")}</table>
+  <div class="pb"></div><h3>答え</h3><table border="1" style="border-collapse:collapse;width:100%"><tr><th style="width:12%">No.</th><th style="width:40%">日本語</th><th>英語</th></tr>
+  ${rows.map(r=>`<tr><td>${esc(r.c.no)}</td><td>${esc(r.c.ja)}</td><td>${esc(r.c.en)}</td></tr>`).join("")}</table>`;
+  try{window.print()}catch(e){toast("印刷できませんでした")}
+}
+
+/* ===== 問題データ ===== */
+function parseTable(txt){
+  txt=txt.replace(/^﻿/,"").replace(/\r\n?/g,"\n");
+  const tab=txt.split("\n")[0].includes("\t");const rows=[];
+  if(tab){for(const l of txt.split("\n"))if(l.trim())rows.push(l.split("\t"))}
+  else{let r=[],f="",q=false;for(let i=0;i<txt.length;i++){const ch=txt[i];
+    if(q){if(ch==='"'){if(txt[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+    else if(ch==='"')q=true;else if(ch===","){r.push(f);f=""}else if(ch==="\n"){r.push(f);if(r.some(x=>x.trim()))rows.push(r);r=[];f=""}else f+=ch}
+    r.push(f);if(r.some(x=>x.trim()))rows.push(r)}
+  if(rows.length&&!/\d/.test(rows[0][0]||"")&&/番号|no|英|日本|en|ja/i.test(rows[0].join("")))rows.shift();
+  return rows.map((r,i)=>({no:(r[0]||String(i+1)).trim(),en:(r[1]||"").trim(),ja:(r[2]||"").trim(),ex:(r[3]||"").trim(),exja:(r[4]||"").trim()})).filter(c=>c.en&&c.ja);
+}
+async function importDeck(name,cards){
+  if(!cards.length)return toast("読み取れる問題がありませんでした",1800);
+  let d=decks.find(x=>x.name===name);
+  if(d){if(!(await ask(`「${esc(name)}」を新しい内容で置き換えます（同じ番号の記録は残ります）。よろしいですか？`)))return;d.cards=cards}
+  else{d={id:"d"+Date.now().toString(36),name,color:COLORS[decks.length%COLORS.length],cards};decks.push(d)}
+  save(K.decks,decks);set.deck=d.id;save(K.set,set);toast(`「${esc(name)}」${cards.length}問を取り込みました`,1800);dataView();
+}
+function dataView(){
+  V.innerHTML=`<div class="card"><h2>教材</h2>${decks.map(d=>`<div class="deck"><span class="pill" style="background:${d.color}">${d.cards.length}問</span><span class="name">${esc(d.name)}</span><button class="btn sub small" data-del="${d.id}">削除</button></div>`).join("")||'<p class="muted">まだありません</p>'}</div>
+  <div class="card"><h2>問題を取り込む</h2>
+   <p class="muted" style="line-height:1.6">ファイル（CSV／JSON）を選ぶか、下の欄に貼り付けます。1行に1問：<br><code>番号,英語,日本語,例文,例文の訳</code>（例文は省略可）</p>
+   <input type="text" id="dname" placeholder="教材の名前（例：スクランブル 1244-1345）" style="width:100%;margin-bottom:8px">
+   <label class="btn sub" style="display:block;text-align:center;margin-bottom:8px">ファイルを選ぶ<input type="file" id="file" accept=".csv,.tsv,.txt,.json,text/*,application/json" class="hidden"></label>
+   <textarea id="paste" placeholder="1244,be ~,～の意味,例文,例文の訳"></textarea>
+   <button class="btn" id="imp" style="margin-top:8px">貼り付けた内容を取り込む</button></div>
+  <div class="card"><h2>設定</h2>
+   <div class="row"><span class="muted">1日の新しい問題</span><select id="npd">${[5,10,15].map(n=>`<option ${n==set.newPerDay?"selected":""}>${n}</option>`).join("")}</select><span class="muted">問まで</span></div>
+   <div class="muted" style="margin:6px 0 12px">毎日の30問のうち、初めて出る問題の上限です。</div>
+   <button class="btn sub" id="demoBtn">連続が途切れたときの画面を見る（確認用）</button></div>
+  <div class="card"><h2>記録のバックアップ</h2><p class="muted" style="line-height:1.6">iPhoneは長いあいだ開かないとデータが消えることがあります。週に1回くらいバックアップしてください。</p>
+   <div class="grade"><button class="btn sub" id="bk1">ファイルに保存</button><button class="btn sub" id="bk2">コピーする</button></div>
+   <label class="btn sub" style="display:block;text-align:center;margin-top:8px">バックアップから戻す<input type="file" id="rest" accept=".json,application/json" class="hidden"></label></div>
+  <p class="muted" style="text-align:center">暗記カード ${APPVER}</p>`;
+  V.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{const d=deckById(b.dataset.del);if(!(await ask(`「${esc(d.name)}」を削除しますか？記録も消えます。`)))return;
+    decks=decks.filter(x=>x!==d);for(const k of Object.keys(prog))if(k.startsWith(d.id+"::"))delete prog[k];save(K.decks,decks);save(K.prog,prog);
+    if(set.deck===d.id){set.deck=decks[0]?decks[0].id:"";save(K.set,set)}dataView()});
+  const nm=()=>($("dname").value.trim()||"新しい教材");
+  $("file").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{
+    let txt=String(r.result),name=$("dname").value.trim()||f.name.replace(/\.[^.]+$/,"");
+    if(/^\s*[\[{]/.test(txt)){try{const j=JSON.parse(txt);if(j.app==="ankicard-backup")return restore(j);
+      const arr=Array.isArray(j)?j:j.cards;if(j.name&&!$("dname").value.trim())name=j.name;
+      return importDeck(name,arr.map((c,i)=>({no:String(c.no??i+1),en:c.en||"",ja:c.ja||"",ex:c.ex||"",exja:c.exja||""})).filter(c=>c.en&&c.ja))}catch(err){return toast("ファイルを読めませんでした",1800)}}
+    importDeck(name,parseTable(txt))};r.readAsText(f,"utf-8")};
+  $("imp").onclick=()=>importDeck(nm(),parseTable($("paste").value));
+  const dump=()=>JSON.stringify({app:"ankicard-backup",ver:2,date:today(),decks,prog,log,stats,set});
+  $("bk1").onclick=()=>{try{const b=new Blob([dump()],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=`暗記カード_バックアップ_${today()}.json`;document.body.appendChild(a);a.click();a.remove()}catch(e){toast("保存できませんでした")}};
+  $("bk2").onclick=async()=>{try{await navigator.clipboard.writeText(dump());toast("コピーしました。メモなどに貼って保存してください",2200)}catch(e){toast("コピーできませんでした",1600)}};
+  $("rest").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{restore(JSON.parse(r.result))}catch(err){toast("ファイルを読めませんでした",1800)}};r.readAsText(f,"utf-8")};
+  $("demoBtn").onclick=()=>{DEMO=true;go("home")};
+  $("npd").onchange=()=>{set.newPerDay=+$("npd").value;save(K.set,set)};
+}
+async function restore(j){if(j.app!=="ankicard-backup")return toast("バックアップのファイルではありません",1800);
+  if(!(await ask(`${esc(j.date)} のバックアップに戻します。今の記録は上書きされます。よろしいですか？`)))return;
+  decks=j.decks;prog=j.prog;log=j.log;stats=Object.assign({xp:0,best:0,milestones:[]},j.stats);set=Object.assign(set,j.set);save(K.decks,decks);saveAll();
+  toast("戻しました");go("home")}
+
+/* ===== 起動 ===== */
+if("serviceWorker" in navigator&&location.protocol!=="file:"){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}
+if(location.hash==="#demo")DEMO=true;
+home();hdr();
+</script>
+</body>
+</html>
