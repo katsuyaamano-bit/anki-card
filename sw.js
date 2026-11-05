@@ -1,6 +1,6 @@
 // オフライン用：アプリ本体をiPhoneに保存しておく
 // アプリを更新したら VERSION の数字を上げる
-const VERSION = "ankicard-v7";
+const VERSION = "ankicard-v8";
 const FILES = ["./", "index.html", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
 
