@@ -139,7 +139,7 @@ function home(){
  <div class="card sans"><div class="rank"><div class="big">${r[1]}</div><div style="flex:1"><div class="muted">${nx?`次の「${nx[1]}」まで ${nx[0]-R.pt}pt`:"最高位に到達！"}</div><div class="bar"><i style="width:${pr}%"></i></div></div></div>
  <div class="muted" style="margin-top:8px">今日：${td.n}問（正解 ${td.ok}）／ 覚えた例文 ${mast}/${CARDS.length}</div></div>
  <button class="btn b1" onclick="start('today')">今日の問題 ${S.per}問<small>復習 ${due}問 → 新しい例文（残り ${fresh}）</small></button>
- <div class="row"><button class="btn b2" onclick="start('ng')">×だけ<small>${ngc}問</small></button><button class="btn b2" onclick="start('exam')">本番モード<small>全${CARDS.length}問・点数</small></button></div>
+ <div class="row"><button class="btn b2" onclick="start('ng')">×だけ<small>${ngc}問</small></button><button class="btn b2" onclick="start('exam')">本番モード<small>全${CARDS.filter(c=>!c.rel).length}問・点数</small></button></div>
  <div class="row"><button class="btn b3" onclick="start('warm')">単語→意味<small>ウォームアップ</small></button><button class="btn b3" onclick="listView()">一覧<small>例文と訳</small></button></div>
  <div class="card sans"><b>30語の覚え具合</b> <span class="muted">（押すとその単語だけ練習）</span><div class="grid">${tiles}</div>
  <div class="muted" style="margin-top:6px">灰＝まだ／薄橙→濃橙＝練習中／えんじ＝覚えた（3回続けて正解）</div></div>
