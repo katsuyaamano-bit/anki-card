@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#7A2E3A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>古文単語 例文テスト</title>
+<style>
+:root{--c:#7A2E3A;--c2:#B8860B;--bg:#FAF6EE;--card:#fff;--ink:#222;--mut:#6b6b6b;--ok:#2E7D32;--ng:#C62828;--line:#C0392B}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Mincho ProN","Yu Mincho","Noto Serif JP","Noto Serif CJK JP",serif;-webkit-tap-highlight-color:transparent}
+.sans{font-family:"Hiragino Sans","Noto Sans JP","Noto Sans CJK JP",sans-serif}
+header{background:var(--c);color:#fff;padding:10px 14px calc(10px);display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+header h1{font-size:17px;margin:0;flex:1;letter-spacing:.05em}
+header .st{font-size:12px;text-align:right;line-height:1.35}
+main{max-width:640px;margin:0 auto;padding:12px 12px 90px}
+.card{background:var(--card);border-radius:14px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:14px;margin-bottom:12px}
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:14px;font-size:17px;font-weight:700;margin:8px 0;cursor:pointer;font-family:inherit}
+.b1{background:var(--c);color:#fff}.b2{background:#fff;color:var(--c);border:2px solid var(--c)}.b3{background:#EFE7D6;color:#333}
+.btn small{display:block;font-weight:400;font-size:12.5px;opacity:.85;margin-top:2px}
+.row{display:flex;gap:8px}.row>*{flex:1}
+.rank{display:flex;align-items:center;gap:12px}
+.rank .big{font-size:28px;font-weight:800;color:var(--c)}
+.bar{height:10px;background:#eee;border-radius:5px;overflow:hidden;margin-top:6px}.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--c2),var(--c))}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:8px}
+.tile{border-radius:7px;padding:5px 2px;text-align:center;font-size:11px;line-height:1.2;color:#333;background:#eee}
+.tile b{display:block;font-size:13px}
+.l0{background:#eee}.l1{background:#F6D7A7}.l2{background:#EDB06A}.l3{background:#C9822E;color:#fff}.l4{background:var(--c);color:#fff}
+.muted{color:var(--mut);font-size:13px}
+.qhead{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--mut);margin-bottom:6px}
+.prompt{font-size:14px;font-weight:700;margin:2px 0 8px}
+.tatebox{display:flex;justify-content:center;overflow-x:auto;padding:6px 0;direction:rtl}
+.tate{writing-mode:vertical-rl;text-orientation:mixed;height:min(56vh,440px);font-size:21px;line-height:2.05;letter-spacing:.06em;direction:ltr}
+.yoko{font-size:19px;line-height:2.1}
+.bou{border-right:3px solid var(--line);padding-right:1px}
+.yoko .bou{border-right:0;border-bottom:3px solid var(--line);padding:0}
+ruby rt{font-size:.45em;color:#777}
+.src{font-size:12px;color:var(--mut);text-align:left;margin-top:4px}
+.choices{margin-top:10px}
+.ch{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;background:#fff;border:2px solid #ddd;border-radius:12px;padding:12px;margin:7px 0;font-size:16.5px;font-family:inherit;cursor:pointer;color:#222}
+.ch .k{flex:0 0 26px;height:26px;border-radius:50%;background:#F1E9DA;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px}
+.ch.ok{border-color:var(--ok);background:#E8F5E9}.ch.ng{border-color:var(--ng);background:#FFEBEE}
+.res{border-radius:12px;padding:12px;margin-top:10px}
+.res.ok{background:#E8F5E9}.res.ng{background:#FFEBEE}
+.res h3{margin:0 0 6px;font-size:18px}
+.tr{font-size:16px;line-height:1.75;background:#fff;border-radius:8px;padding:8px 10px;margin-top:4px}
+.lbl{font-size:13px;font-weight:700;color:var(--c);margin-top:8px}
+.orig{font-size:16px;line-height:1.9;margin-top:2px}
+.orig .bou{border-right:0;border-bottom:2.5px solid var(--line)}
+#after{scroll-margin-top:64px;padding-bottom:20px}
+.tr mark{background:#FFE082;padding:0 2px}
+.wbox{border:2px solid var(--c);border-radius:12px;padding:10px;margin-top:10px;background:#FFFDF8}
+.wbox .wn{font-size:20px;font-weight:800;color:var(--c)}
+.wbox .key{background:#F7EAD2;border-radius:8px;padding:6px 8px;margin:6px 0;font-weight:700;font-size:14.5px}
+.wbox ol{margin:6px 0 0;padding-left:22px;font-size:15px;line-height:1.6}
+.wbox li.hit{font-weight:800;color:var(--ok)}
+.fx{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font-size:30px;font-weight:900;color:var(--c2);pointer-events:none;opacity:0;transition:all .6s}
+.fx.show{opacity:1;top:34%}
+.bottom{position:fixed;left:0;right:0;bottom:0;background:rgba(250,246,238,.97);padding:10px 12px calc(10px + env(safe-area-inset-bottom));box-shadow:0 -2px 8px rgba(0,0,0,.06)}
+.bottom .btn{max-width:616px;margin:0 auto}
+.list .it{border-bottom:1px solid #eee;padding:10px 0}
+.list .it h4{margin:0;font-size:17px;color:var(--c)}
+.list .ex{font-size:15px;margin:6px 0 2px;line-height:1.8}
+.list .ex .bou{border-right:0;border-bottom:2px solid var(--line)}
+.list details{font-size:14px;color:#444}
+.seg{display:flex;gap:6px;flex-wrap:wrap}.seg button{flex:1;padding:9px;border-radius:9px;border:2px solid var(--c);background:#fff;color:var(--c);font-weight:700;font-family:inherit}
+.seg button.on{background:var(--c);color:#fff}
+.done{text-align:center}.done .big{font-size:44px;font-weight:900;color:var(--c)}
+a{color:var(--c)}
+</style>
+</head>
+<body>
+<header><h1>古文単語 例文テスト</h1><div class="st sans" id="hst"></div></header>
+<main id="m"></main>
+<div class="fx" id="fx"></div>
+<script>
+"use strict";
+const KD="kobun-data-v1",KR="kobun-rec-v1",KS="kobun-set-v1";
+const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let DATA=ld(KD,null);
+if(!DATA && window.EMBED_DATA){DATA=window.EMBED_DATA;}
+let R=ld(KR,{c:{},pt:0,days:[],streak:0,last:"",today:{d:"",n:0,ok:0}});
+let S=ld(KS,{tate:true,per:15});
+const $=s=>document.querySelector(s);
+const M=()=>$("#m");
+const IV=[1,3,7,14,30];
+const RANKS=[[0,"見習い"],[150,"童（わらは）"],[400,"女房"],[800,"蔵人"],[1300,"少納言"],[2000,"中納言"],[2800,"大納言"],[3800,"大臣"],[5000,"関白"]];
+function today(){const d=new Date(Date.now()-3*3600e3);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function addDays(s,n){const d=new Date(s+"T12:00:00");d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function ruby(s){return esc(s).replace(/([一-龥々〆ヵヶ]+)《([^》]+)》/g,"<ruby>$1<rt>$2</rt></ruby>")}
+function plain(s){return s.replace(/《[^》]*》/g,"")}
+function rankOf(p){let r=RANKS[0],nx=null;for(let i=0;i<RANKS.length;i++){if(p>=RANKS[i][0]){r=RANKS[i];nx=RANKS[i+1]||null}}return{r,nx}}
+// ---------- cards ----------
+let CARDS=[];
+function build(){CARDS=[];if(!DATA)return;
+ DATA.words.forEach(w=>{
+  w.ex.forEach((x,i)=>CARDS.push({id:w.no+"-"+(i+1),w,x,ans:w.means[x.m-1],m:x.m,rel:false}));
+  (w.rel||[]).forEach((x,i)=>CARDS.push({id:w.no+"-r"+(i+1),w,x,ans:x.a,m:0,rel:true}));
+ });}
+function rec(id){return R.c[id]||(R.c[id]={b:0,due:"",s:0,seen:0,ng:0})}
+function lvl(id){const c=R.c[id];if(!c||!c.seen)return 0;if(c.s>=3)return 4;if(c.b>=2)return 3;if(c.b>=1)return 2;return 1}
+function terms(t){return t.replace(/（[^）]*）/g,"").split(/[。・]/).map(s=>s.trim()).filter(Boolean)}
+function overlap(a,b){const A=terms(a),B=terms(b);return A.some(x=>B.some(y=>x===y||x.includes(y)||y.includes(x)))}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function clean(t){return t.replace(/^(（[^）]*）)+/,"")}
+function makeChoices(card){
+ const ans=clean(card.ans),out=[ans];
+ if(!card.rel){card.w.means.forEach((mm,i)=>{mm=clean(mm);if(i!==card.m-1&&out.length<3&&!out.some(o=>overlap(o,mm)))out.push(mm)})}
+ const pool=[];DATA.words.forEach(w=>{if(w.no!==card.w.no)w.means.forEach(mm=>pool.push(clean(mm)))});
+ shuffle(pool);
+ for(const p of pool){if(out.length>=4)break;if(!out.some(o=>o===p||overlap(o,p)))out.push(p)}
+ return shuffle(out);
+}
+function sentHTML(x){
+ const s=ruby(x.s),u=esc(x.u);
+ return s.split(u).join('<span class="bou">'+u+'</span>');
+}
+// ---------- header ----------
+function hdr(){const {r}=rankOf(R.pt);$("#hst").innerHTML=`${r[1]}　${R.pt}pt<br>連続 ${R.streak}日`}
+// ---------- home ----------
+function home(){
+ hdr();
+ if(!DATA){M().innerHTML=`<div class="card"><h2 style="margin-top:0">はじめに</h2><p>問題データ（<b>【勉強】アプリ用データ_古文単語91-120…json</b>）を取り込んでください。</p>${importUI()}</div>`;bindImport();return}
+ build();
+ const t=today();
+ const due=CARDS.filter(c=>{const r=R.c[c.id];return r&&r.seen&&r.due<=t&&r.s<3}).length;
+ const fresh=CARDS.filter(c=>!R.c[c.id]||!R.c[c.id].seen).length;
+ const mast=CARDS.filter(c=>lvl(c.id)===4).length;
+ const ngc=CARDS.filter(c=>R.c[c.id]&&R.c[c.id].ng>0&&R.c[c.id].s<3).length;
+ const {r,nx}=rankOf(R.pt);const pr=nx?Math.round((R.pt-r[0])/(nx[0]-r[0])*100):100;
+ const td=R.today.d===t?R.today:{n:0,ok:0};
+ let tiles="";DATA.words.forEach(w=>{const ids=CARDS.filter(c=>c.w.no===w.no).map(c=>lvl(c.id));const v=Math.min(...ids);tiles+=`<div class="tile l${v}" onclick="wordView(${w.no})"><b>${w.no}</b>${esc(w.w.slice(0,5))}</div>`});
+ M().innerHTML=`
+ <div class="card sans"><div class="rank"><div class="big">${r[1]}</div><div style="flex:1"><div class="muted">${nx?`次の「${nx[1]}」まで ${nx[0]-R.pt}pt`:"最高位に到達！"}</div><div class="bar"><i style="width:${pr}%"></i></div></div></div>
+ <div class="muted" style="margin-top:8px">今日：${td.n}問（正解 ${td.ok}）／ 覚えた例文 ${mast}/${CARDS.length}</div></div>
+ <button class="btn b1" onclick="start('today')">今日の問題 ${S.per}問<small>復習 ${due}問 → 新しい例文（残り ${fresh}）</small></button>
+ <div class="row"><button class="btn b2" onclick="start('ng')">×だけ<small>${ngc}問</small></button><button class="btn b2" onclick="start('exam')">本番モード<small>全${CARDS.length}問・点数</small></button></div>
+ <div class="row"><button class="btn b3" onclick="start('warm')">単語→意味<small>ウォームアップ</small></button><button class="btn b3" onclick="listView()">一覧<small>例文と訳</small></button></div>
+ <div class="card sans"><b>30語の覚え具合</b> <span class="muted">（押すとその単語だけ練習）</span><div class="grid">${tiles}</div>
+ <div class="muted" style="margin-top:6px">灰＝まだ／薄橙→濃橙＝練習中／えんじ＝覚えた（3回続けて正解）</div></div>
+ <div class="card sans"><b>設定</b>
+  <div class="muted" style="margin:6px 0 4px">例文の向き</div><div class="seg"><button class="${S.tate?"on":""}" onclick="setS('tate',true)">縦書き（テストと同じ）</button><button class="${S.tate?"":"on"}" onclick="setS('tate',false)">横書き</button></div>
+  <div class="muted" style="margin:8px 0 4px">今日の問題の数</div><div class="seg">${[10,15,20,30].map(n=>`<button class="${S.per===n?"on":""}" onclick="setS('per',${n})">${n}</button>`).join("")}</div>
+  <details style="margin-top:10px"><summary>問題データ</summary>${importUI()}<p class="muted">${esc(DATA.title||"")}（${DATA.date||""}）</p></details>
+ </div>`;
+ bindImport();
+}
+function setS(k,v){S[k]=v;sv(KS,S);home()}
+function importUI(){return `<input type="file" id="fi" accept=".json,application/json" style="margin:8px 0"><div class="muted">ファイルを選ぶだけで取り込めます（記録は残ります）。</div>`}
+function bindImport(){const f=$("#fi");if(!f)return;f.onchange=()=>{const file=f.files[0];if(!file)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(d.app!=="kobun-data"||!d.words)throw 0;DATA=d;sv(KD,d);alertBox("取り込みました："+d.words.length+"語");home()}catch(e){alertBox("このファイルは古文単語アプリ用ではありません")}};rd.readAsText(file,"utf-8")}}
+function alertBox(t){const fx=$("#fx");fx.style.fontSize="18px";fx.textContent=t;fx.classList.add("show");setTimeout(()=>{fx.classList.remove("show");fx.style.fontSize=""},1600)}
+// ---------- session ----------
+let Q=null;
+function start(mode,wno){
+ build();const t=today();let list=[];
+ if(mode==="today"){
+  const due=CARDS.filter(c=>{const r=R.c[c.id];return r&&r.seen&&r.due<=t&&r.s<3});
+  const fresh=CARDS.filter(c=>!R.c[c.id]||!R.c[c.id].seen);
+  list=shuffle(shuffle(due).concat(fresh).slice(0,S.per));
+  if(list.length<S.per){const rest=shuffle(CARDS.filter(c=>!list.includes(c)).sort((a,b)=>lvl(a.id)-lvl(b.id)).slice(0,S.per-list.length));list=list.concat(rest)}
+ }else if(mode==="ng"){list=shuffle(CARDS.filter(c=>R.c[c.id]&&R.c[c.id].ng>0&&R.c[c.id].s<3));if(!list.length){alertBox("×の問題はありません");return}}
+ else if(mode==="exam"){list=shuffle(CARDS.filter(c=>!c.rel).slice())}
+ else if(mode==="word"){list=CARDS.filter(c=>c.w.no===wno)}
+ else if(mode==="warm"){list=shuffle(DATA.words.slice()).slice(0,15).map(w=>({id:"w"+w.no,w,warm:true}))}
+ Q={mode,list,i:0,ok:0,combo:0,maxc:0,pt:0,wrong:[]};
+ ask();
+}
+function ask(){
+ const c=Q.list[Q.i];if(!c){finish();return}
+ Q.done=false;window.scrollTo(0,0);
+ let body="",ch;
+ if(c.warm){
+  ch=[c.w.means.join(" / ")];const pool=shuffle(DATA.words.filter(w=>w.no!==c.w.no));for(const w of pool){if(ch.length>=4)break;ch.push(w.means.join(" / "))}
+  ch=shuffle(ch);c._ans=c.w.means.join(" / ");
+  body=`<div class="prompt sans">次の古語の意味は？</div><div class="card" style="text-align:center"><div style="font-size:34px;font-weight:800;color:var(--c)">${esc(c.w.w)}</div><div class="muted">${c.w.kanji?"【"+esc(c.w.kanji)+"】":""}［${esc(c.w.pos)}］</div></div>`;
+ }else{
+  ch=makeChoices(c);c._ans=clean(c.ans);
+  const box=S.tate?`<div class="tatebox"><div class="tate">${sentHTML(c.x)}</div></div>`:`<div class="yoko">${sentHTML(c.x)}</div>`;
+  body=`<div class="prompt sans">傍線部の意味として最も適当なものを選びなさい。</div><div class="card">${box}<div class="src sans">（${esc(c.x.src)}）${c.rel?"　※関連語の例文":""}</div></div>`;
+ }
+ c._ch=ch;
+ const K="アイウエ";
+ M().innerHTML=`<div class="qhead sans"><span>${Q.mode==="exam"?"本番モード":Q.mode==="warm"?"ウォームアップ":Q.mode==="ng"?"×だけ":"今日の問題"}　${Q.i+1} / ${Q.list.length}</span><span>${Q.combo>=2?"🔥"+Q.combo+"連続":""}</span></div>${body}
+ <div class="choices">${ch.map((t,i)=>`<button class="ch" onclick="pick(${i})"><span class="k sans">${K[i]}</span><span>${esc(t)}</span></button>`).join("")}</div><div id="after"></div>
+ <div class="row" style="margin-top:6px"><button class="btn b3" style="font-size:14px;padding:9px" onclick="home()">やめる</button></div>`;
+}
+function pick(i){
+ if(Q.done)return;Q.done=true;
+ const c=Q.list[Q.i],t=today(),ok=c._ch[i]===c._ans;
+ document.querySelectorAll(".ch").forEach((b,j)=>{if(c._ch[j]===c._ans)b.classList.add("ok");else if(j===i)b.classList.add("ng")});
+ let gain=0;
+ if(ok){Q.ok++;Q.combo++;Q.maxc=Math.max(Q.maxc,Q.combo);gain=10;if(Q.combo%5===0){gain+=10;fx("🔥"+Q.combo+"連続！ +10")}}
+ else{Q.combo=0;gain=2}
+ if(!c.warm){
+  const r=rec(c.id),first=!Q.wrong.includes(c.id);
+  if(Q.mode!=="exam"||true){
+   if(first){r.seen++;
+    if(ok){r.s++;r.b=Math.min(r.b+1,IV.length-1);r.due=addDays(t,IV[r.b]);if(r.s===3){gain+=20;fx("覚えた！ +20")}}
+    else{r.ng++;r.s=0;r.b=0;r.due=addDays(t,1)}
+   }else if(ok){gain=3}
+  }
+  if(!ok&&Q.mode!=="exam"&&!Q.wrong.includes(c.id)){Q.wrong.push(c.id);Q.list.splice(Math.min(Q.i+4,Q.list.length),0,c)}
+ }else if(!ok&&!Q.wrong.includes(c.id)){Q.wrong.push(c.id);Q.list.splice(Math.min(Q.i+4,Q.list.length),0,c)}
+ Q.pt+=gain;R.pt+=gain;
+ if(R.today.d!==t)R.today={d:t,n:0,ok:0};R.today.n++;if(ok)R.today.ok++;
+ sv(KR,R);hdr();
+ let html=`<div class="res ${ok?"ok":"ng"}"><h3 class="sans">${ok?"⭕ 正解":"✖ 正解は「"+esc(c._ans)+"」"}</h3>`;
+ const x=c.warm?c.w.ex[0]:c.x;
+ html+=`<div class="lbl sans">文全体の意味</div><div class="orig">${sentHTML(x)}<span class="muted sans">（${esc(x.src)}）</span></div><div class="tr">${markTr(x.tr,c.warm?c.w.means[x.m-1]:c._ans)}</div>`;
+ html+=`</div>`+wordBox(c.w,c.warm?x.m:c.m);
+ $("#after").innerHTML=html;
+ setTimeout(()=>{const a=$("#after");if(a)a.scrollIntoView({behavior:"smooth",block:"start"})},150);
+ const bt=document.createElement("div");bt.className="bottom";bt.id="nx";bt.innerHTML=`<button class="btn b1" onclick="next()">次へ</button>`;document.body.appendChild(bt);
+}
+function wordBox(w,m){return `<div class="wbox"><div class="wn">${w.no}　${esc(w.w)} <span class="muted">${w.kanji?"【"+esc(w.kanji)+"】":""}［${esc(w.pos)}］</span></div><div class="key sans">💡 ${ruby(w.key)}</div><ol>${w.means.map((t,i)=>`<li class="${i+1===m?"hit":""}">${esc(t)}</li>`).join("")}</ol></div>`}
+function markTr(tr,ans){let s=esc(tr);const ts=terms(clean(ans)).sort((a,b)=>b.length-a.length);
+ for(const t of ts){const cands=[t,t.replace(/[だい]$/,""),t.replace(/だ$/,"な"),t.replace(/だ$/,"に")].filter(v=>v.length>=2);
+  for(const v of cands){if(s.includes(v)){return s.replace(v,"<mark>"+v+"</mark>")}}}
+ return s}
+function next(){const b=$("#nx");if(b)b.remove();Q.i++;ask()}
+function fx(t){const e=$("#fx");e.textContent=t;e.classList.add("show");setTimeout(()=>e.classList.remove("show"),900)}
+function finish(){
+ const t=today();
+ if(Q.mode==="today"&&R.last!==t){R.streak=(R.last===addDays(t,-1))?R.streak+1:1;R.last=t;const b=30+Math.min(R.streak*5,50);R.pt+=b;Q.pt+=b;}
+ sv(KR,R);hdr();
+ const firstN=Q.list.length-Q.wrong.length,score=Q.mode==="exam"?Math.round(Q.ok/Q.list.length*100):null;
+ M().innerHTML=`<div class="card done sans"><div class="muted">${Q.mode==="exam"?"本番モードの結果":"おつかれさま！"}</div>
+ <div class="big">${score!==null?score+"点":Q.ok+"問正解"}</div>
+ <div>最大 ${Q.maxc}連続 ／ +${Q.pt}pt${Q.mode==="today"?"（今日の問題達成ボーナス込み）":""}</div>
+ ${Q.wrong.length?`<p class="muted">間違えた ${Q.wrong.length}問は明日また出ます。「×だけ」でも練習できます。</p>`:`<p>全問正解！</p>`}
+ </div><button class="btn b1" onclick="home()">ホームへ</button>${Q.wrong.length?`<button class="btn b2" onclick="start('ng')">×だけもう一度</button>`:""}`;
+}
+// ---------- list / word ----------
+function exHTML(w,x,label){return `<div class="ex">${label?`<span class="muted sans">${label}</span> `:""}${sentHTML(x)} <span class="muted sans">（${esc(x.src)}）</span></div><details><summary>訳を見る</summary>${esc(x.tr)}</details>`}
+function listView(){
+ build();
+ M().innerHTML=`<button class="btn b3" onclick="home()">← ホーム</button><div class="card list">${DATA.words.map(w=>`<div class="it"><h4>${w.no}　${esc(w.w)} <span class="muted sans">${w.kanji?"【"+esc(w.kanji)+"】":""}［${esc(w.pos)}］</span></h4>
+ <div class="muted sans">💡 ${ruby(w.key)}</div><ol style="margin:4px 0;padding-left:20px;font-size:15px">${w.means.map(t=>`<li>${esc(t)}</li>`).join("")}</ol>
+ ${w.ex.map(x=>exHTML(w,x,"例"+x.m)).join("")}${(w.rel||[]).map(x=>exHTML(w,x,esc(x.word))).join("")}</div>`).join("")}</div>`;
+ window.scrollTo(0,0);
+}
+function wordView(no){start("word",no)}
+// ---------- init ----------
+if("serviceWorker" in navigator&&location.protocol.startsWith("http")&&!window.EMBED_DATA){navigator.serviceWorker.register("sw.js").catch(()=>{})}
+home();
+</script>
+</body>
+</html>
